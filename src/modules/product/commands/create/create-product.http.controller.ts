@@ -1,6 +1,7 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { routesV1 } from '@src/config/app.routes';
+import { match } from '@src/lib/utils/result-matcher.util';
 import { CreateProductCommand } from './create-product.command';
 import { CreateProductRequestDto } from './create-product.request.dto';
 import { CreateProductResponseDto } from './create-product.response.dto';
@@ -32,6 +33,14 @@ export class CreateProductHttpController {
       dto.isActive,
       dto.imageUrl,
     );
-    return this.createProductService.handle(command);
+
+    const result = await this.createProductService.handle(command);
+
+    return match(result, {
+      Ok: (response: CreateProductResponseDto) => response,
+      Err: (error: Error) => {
+        throw error;
+      },
+    });
   }
 }

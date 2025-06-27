@@ -1,6 +1,7 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { routesV1 } from '@src/config/app.routes';
+import { match } from '@src/lib/utils/result-matcher.util';
 import { FindProductsQuery } from './find-products.query';
 import { FindProductsQueryHandler } from './find-products.query-handler';
 import { FindProductsResponseDto } from './find-products.response.dto';
@@ -52,6 +53,14 @@ export class FindProductsHttpController {
       orderBy: [],
       quickSearch: quickSearch || undefined,
     });
-    return this.queryHandler.handle(query);
+
+    const result = await this.queryHandler.handle(query);
+
+    return match(result, {
+      Ok: (response: FindProductsResponseDto) => response,
+      Err: (error: Error) => {
+        throw error;
+      },
+    });
   }
 }

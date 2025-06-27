@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException, Inject } from '@nestjs/common';
+import { Result, Ok, Err } from 'oxide.ts';
 import {
   ProductRepositoryPort,
   PRODUCT_REPOSITORY,
@@ -15,18 +16,28 @@ export class DeleteProductService {
 
   async handle(
     command: DeleteProductCommand,
-  ): Promise<DeleteProductResponseDto> {
-    const productOption = await this.productRepository.findOneById(command.id);
+  ): Promise<Result<DeleteProductResponseDto, Error>> {
+    try {
+      const productOption = await this.productRepository.findOneById(
+        command.id,
+      );
 
-    if (productOption.isNone()) {
-      throw new NotFoundException(`Product with ID ${command.id} not found`);
+      if (productOption.isNone()) {
+        return Err(
+          new NotFoundException(`Product with ID ${command.id} not found`),
+        );
+      }
+
+      const success = await this.productRepository.delete(
+        productOption.unwrap(),
+      );
+      if (!success) {
+        return Err(new Error(`Failed to delete product with ID ${command.id}`));
+      }
+
+      return Ok({ message: 'Product deleted successfully' });
+    } catch (error) {
+      return Err(error instanceof Error ? error : new Error(String(error)));
     }
-
-    const success = await this.productRepository.delete(productOption.unwrap());
-    if (!success) {
-      throw new Error(`Failed to delete product with ID ${command.id}`);
-    }
-
-    return { message: 'Product deleted successfully' };
   }
 }
