@@ -6,3 +6,4 @@ export * from './convert-string-to.util';
 export * from './constants';
 export * from './check-validate.util';
 export * from './builder-prisma-condition.util';
+export * from './result-matcher.util';

@@ -1,6 +1,7 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { Product } from 'generated/prisma';
 import { Decimal } from '@prisma/client/runtime/library';
+import { Result, Ok, Err } from 'oxide.ts';
 import {
   ProductRepositoryPort,
   PRODUCT_REPOSITORY,
@@ -17,21 +18,25 @@ export class CreateProductService {
 
   async handle(
     command: CreateProductCommand,
-  ): Promise<CreateProductResponseDto> {
-    const product = await this.productRepository.insert({
-      name: command.name,
-      description: command.description ?? null,
-      price: new Decimal(command.price),
-      category: command.category,
-      brand: command.brand,
-      stock: command.stock ?? 0,
-      isActive: command.isActive ?? true,
-      imageUrl: command.imageUrl ?? null,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    } as Product);
+  ): Promise<Result<CreateProductResponseDto, Error>> {
+    try {
+      const product = await this.productRepository.insert({
+        name: command.name,
+        description: command.description ?? null,
+        price: new Decimal(command.price),
+        category: command.category,
+        brand: command.brand,
+        stock: command.stock ?? 0,
+        isActive: command.isActive ?? true,
+        imageUrl: command.imageUrl ?? null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      } as Product);
 
-    return this.mapToResponseDto(product);
+      return Ok(this.mapToResponseDto(product));
+    } catch (error) {
+      return Err(error instanceof Error ? error : new Error(String(error)));
+    }
   }
 
   private mapToResponseDto(product: Product): CreateProductResponseDto {

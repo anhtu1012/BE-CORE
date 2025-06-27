@@ -1,6 +1,7 @@
 import { Controller, Delete, Param, ParseIntPipe } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { routesV1 } from '@src/config/app.routes';
+import { match } from '@src/lib/utils/result-matcher.util';
 import { DeleteProductCommand } from './delete-product.command';
 import { DeleteProductResponseDto } from './delete-product.response.dto';
 import { DeleteProductService } from './delete-product.service';
@@ -29,6 +30,13 @@ export class DeleteProductHttpController {
     @Param('id', ParseIntPipe) id: number,
   ): Promise<DeleteProductResponseDto> {
     const command = new DeleteProductCommand(BigInt(id));
-    return this.deleteProductService.handle(command);
+    const result = await this.deleteProductService.handle(command);
+
+    return match(result, {
+      Ok: (response: DeleteProductResponseDto) => response,
+      Err: (error: Error) => {
+        throw error;
+      },
+    });
   }
 }

@@ -1,6 +1,7 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { Product } from 'generated/prisma';
 import { IField } from '@src/lib/utils';
+import { Result, Ok, Err } from 'oxide.ts';
 import {
   ProductRepositoryPort,
   PRODUCT_REPOSITORY,
@@ -18,36 +19,41 @@ export class FindProductsQueryHandler {
     private readonly productRepository: ProductRepositoryPort,
   ) {}
 
-  async handle(query: FindProductsQuery): Promise<FindProductsResponseDto> {
-    const searchableFields: IField[] = [
-      { field: 'name', type: 'string' },
-      { field: 'description', type: 'string' },
-      { field: 'category', type: 'string' },
-      { field: 'brand', type: 'string' },
-    ];
+  async handle(
+    query: FindProductsQuery,
+  ): Promise<Result<FindProductsResponseDto, Error>> {
+    try {
+      const searchableFields: IField[] = [
+        { field: 'name', type: 'string' },
+        { field: 'description', type: 'string' },
+        { field: 'category', type: 'string' },
+        { field: 'brand', type: 'string' },
+      ];
 
-    const result = await this.productRepository.findAllPaginatedWithQuickSearch(
-      {
-        limit: query.limit,
-        offset: query.offset,
-        page: query.page,
-        where: query.where,
-        orderBy: query.orderBy,
-        quickSearch: query.quickSearch
-          ? {
-              quickSearchString: query.quickSearch,
-              searchableFields,
-            }
-          : undefined,
-      },
-    );
+      const result =
+        await this.productRepository.findAllPaginatedWithQuickSearch({
+          limit: query.limit,
+          offset: query.offset,
+          page: query.page,
+          where: query.where,
+          orderBy: query.orderBy,
+          quickSearch: query.quickSearch
+            ? {
+                quickSearchString: query.quickSearch,
+                searchableFields,
+              }
+            : undefined,
+        });
 
-    return {
-      count: result.count,
-      limit: result.limit,
-      page: result.page,
-      data: result.data.map((product) => this.mapToResponseDto(product)),
-    };
+      return Ok({
+        count: result.count,
+        limit: result.limit,
+        page: result.page,
+        data: result.data.map((product) => this.mapToResponseDto(product)),
+      });
+    } catch (error) {
+      return Err(error instanceof Error ? error : new Error(String(error)));
+    }
   }
 
   private mapToResponseDto(product: Product): FindProductsItemResponseDto {

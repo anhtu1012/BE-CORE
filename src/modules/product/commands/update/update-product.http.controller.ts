@@ -1,6 +1,7 @@
 import { Body, Controller, Param, ParseIntPipe, Put } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { routesV1 } from '@src/config/app.routes';
+import { match } from '@src/lib/utils/result-matcher.util';
 import { UpdateProductCommand } from './update-product.command';
 import { UpdateProductRequestDto } from './update-product.request.dto';
 import { UpdateProductResponseDto } from './update-product.response.dto';
@@ -41,6 +42,14 @@ export class UpdateProductHttpController {
       dto.isActive,
       dto.imageUrl,
     );
-    return this.updateProductService.handle(command);
+
+    const result = await this.updateProductService.handle(command);
+
+    return match(result, {
+      Ok: (response: UpdateProductResponseDto) => response,
+      Err: (error: Error) => {
+        throw error;
+      },
+    });
   }
 }

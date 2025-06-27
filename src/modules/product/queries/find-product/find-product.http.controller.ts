@@ -1,6 +1,7 @@
 import { Controller, Get, Param, ParseIntPipe } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { routesV1 } from '@src/config/app.routes';
+import { match } from '@src/lib/utils/result-matcher.util';
 import { ProductResponseDto } from '../../dto/product.dto';
 import { FindProductQuery } from './find-product.query';
 import { FindProductQueryHandler } from './find-product.query-handler';
@@ -29,6 +30,13 @@ export class FindProductHttpController {
     @Param('id', ParseIntPipe) id: number,
   ): Promise<ProductResponseDto> {
     const query = new FindProductQuery(BigInt(id));
-    return this.queryHandler.handle(query);
+    const result = await this.queryHandler.handle(query);
+
+    return match(result, {
+      Ok: (response: ProductResponseDto) => response,
+      Err: (error: Error) => {
+        throw error;
+      },
+    });
   }
 }

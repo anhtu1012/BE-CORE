@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException, Inject } from '@nestjs/common';
+import { Result, Ok, Err } from 'oxide.ts';
 import {
   ProductRepositoryPort,
   PRODUCT_REPOSITORY,
@@ -14,14 +15,22 @@ export class FindProductQueryHandler {
     private readonly productRepository: ProductRepositoryPort,
   ) {}
 
-  async handle(query: FindProductQuery): Promise<ProductResponseDto> {
-    const productOption = await this.productRepository.findOneById(query.id);
+  async handle(
+    query: FindProductQuery,
+  ): Promise<Result<ProductResponseDto, Error>> {
+    try {
+      const productOption = await this.productRepository.findOneById(query.id);
 
-    if (productOption.isNone()) {
-      throw new NotFoundException(`Product with ID ${query.id} not found`);
+      if (productOption.isNone()) {
+        return Err(
+          new NotFoundException(`Product with ID ${query.id} not found`),
+        );
+      }
+
+      return Ok(this.mapToResponseDto(productOption.unwrap()));
+    } catch (error) {
+      return Err(error instanceof Error ? error : new Error(String(error)));
     }
-
-    return this.mapToResponseDto(productOption.unwrap());
   }
 
   private mapToResponseDto(product: Product): ProductResponseDto {
