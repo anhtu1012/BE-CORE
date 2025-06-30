@@ -1,4 +1,10 @@
-import { Controller, Delete, Param, ParseIntPipe } from '@nestjs/common';
+import {
+  Controller,
+  Delete,
+  Param,
+  ParseIntPipe,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { routesV1 } from '@src/config/app.routes';
 import { match } from '@src/lib/utils/result-matcher.util';
@@ -6,9 +12,11 @@ import { DeleteProductCommand } from './delete-product.command';
 import { DeleteProductResponseDto } from './delete-product.response.dto';
 import { DeleteProductService } from './delete-product.service';
 import { resourcesV1 } from '@src/config/app.permission';
+import { ClerkAuthGuard } from '@src/shared/auth/guards/clerk-auth.guard';
 
 @ApiTags(`${resourcesV1.PRODUCT.parent} - ${resourcesV1.PRODUCT.name}`)
 @Controller(routesV1.product.root)
+@UseGuards(ClerkAuthGuard)
 export class DeleteProductHttpController {
   constructor(private readonly deleteProductService: DeleteProductService) {}
 

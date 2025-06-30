@@ -4,6 +4,7 @@ export interface Config {
   cors: CorsConfig;
   swagger: SwaggerConfig;
   security: SecurityConfig;
+  clerk: ClerkConfig;
 }
 
 export interface CorsConfig {
@@ -24,4 +25,9 @@ export interface SecurityConfig {
   expiresIn: string;
   refreshIn: string;
   bcryptSaltOrRound: string | number;
+}
+
+export interface ClerkConfig {
+  secretKey: string;
+  publishableKey: string;
 }

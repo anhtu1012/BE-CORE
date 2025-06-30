@@ -1,5 +1,5 @@
+import { PrismaService } from './../../../shared/prisma/prisma.service';
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '@shared/prisma/prisma.service';
 import { Prisma, Product } from 'generated/prisma';
 import { ProductRepositoryPort } from './product.repository.port';
 import { Option, Some, None } from 'oxide.ts';

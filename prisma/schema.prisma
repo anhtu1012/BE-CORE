@@ -23,3 +23,18 @@ model Product {
 
   @@map("products")
 }
+
+model User {
+  id          String   @id @default(uuid())
+  username    String?  
+  firstName   String?
+  lastName    String?
+  clerkId     String   @unique
+  imageUrl    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  clerkCreatedAt BigInt
+  clerkUpdatedAt BigInt
+
+  @@map("users")
+}

@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { PrismaService } from '@shared/prisma/prisma.service';
+import { AuthModule } from '@src/shared/auth/auth.module';
 
 // Controllers
 import { CreateProductHttpController } from './commands/create/create-product.http.controller';
@@ -22,6 +23,7 @@ import { ProductRepositoryPrisma } from './database/product.repository.prisma';
 import { PRODUCT_REPOSITORY } from './database/product.repository.port';
 
 @Module({
+  imports: [AuthModule],
   controllers: [
     CreateProductHttpController,
     CreateArrayProductHttpController,

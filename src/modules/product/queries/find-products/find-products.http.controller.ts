@@ -1,14 +1,23 @@
-import { Controller, Get, Query } from '@nestjs/common';
-import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { routesV1 } from '@src/config/app.routes';
 import { match } from '@src/lib/utils/result-matcher.util';
 import { FindProductsQuery } from './find-products.query';
 import { FindProductsQueryHandler } from './find-products.query-handler';
 import { FindProductsResponseDto } from './find-products.response.dto';
 import { resourcesV1 } from '@src/config/app.permission';
+import { ClerkAuthGuard } from '@src/shared/auth/guards/clerk-auth.guard';
 
 @ApiTags(`${resourcesV1.PRODUCT.parent} - ${resourcesV1.PRODUCT.name}`)
 @Controller(routesV1.product.root)
+@ApiBearerAuth()
+@UseGuards(ClerkAuthGuard)
 export class FindProductsHttpController {
   constructor(private readonly queryHandler: FindProductsQueryHandler) {}
 

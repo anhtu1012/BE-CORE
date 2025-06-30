@@ -28,6 +28,12 @@ const config: Config = {
     refreshIn: '7d',
     bcryptSaltOrRound: 10,
   },
+  clerk: {
+    // Add your ClerkConfig properties here. Example:
+    secretKey: process.env.CLERK_API_KEY || '',
+    publishableKey: process.env.CLERK_PUBLISHABLE_KEY || '',
+    // Add other required ClerkConfig properties as needed
+  },
 };
 
 export default (): Config => config;

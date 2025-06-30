@@ -6,6 +6,9 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ProductModule } from './modules/product/product.module';
 import config from './config/config';
+import { AuthModule } from './shared/auth/auth.module';
+import { ClerkModule } from './shared/clerk/clerk.module';
+import { UserModule } from './modules/users/user.module';
 
 @Module({
   imports: [
@@ -28,6 +31,9 @@ import config from './config/config';
       inject: [ConfigService],
     }),
     ProductModule,
+    AuthModule,
+    ClerkModule,
+    UserModule,
   ],
   controllers: [AppController],
   providers: [AppService],
