@@ -9,7 +9,7 @@ import { join } from 'path';
 function serializeBigInt<T>(obj: T): T {
   return JSON.parse(
     JSON.stringify(obj, (key: string, value: unknown): unknown =>
-      typeof value === 'bigint' ? Number(value) : value,
+      typeof value === 'bigint' ? value.toString() : value,
     ),
   ) as T;
 }

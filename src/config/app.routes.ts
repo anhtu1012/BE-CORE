@@ -25,6 +25,18 @@ export const routesV1 = {
   product: {
     ...baseRoutes('products'),
   },
+  files: {
+    root: 'files',
+    upload: '/files/upload',
+    uploadMultiple: '/files/upload-multiple',
+    presignedUpload: '/files/presigned-upload-url',
+    presignedDownload: '/files/presigned-download-url',
+    list: '/files/list',
+    info: '/files/info/:objectName',
+    delete: '/files/:objectName',
+    move: '/files/move',
+    copy: '/files/copy',
+  },
   //#region History
   apiLog: {
     root: 'api-logs',

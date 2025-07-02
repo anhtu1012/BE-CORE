@@ -5,10 +5,13 @@ import * as redisStore from 'cache-manager-redis-store';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ProductModule } from './modules/product/product.module';
+import { FileUploadModule } from './modules/file-upload/file-upload.module';
 import config from './config/config';
 import { AuthModule } from './shared/auth/auth.module';
 import { ClerkModule } from './shared/clerk/clerk.module';
 import { UserModule } from './modules/users/user.module';
+import { MinioModule } from './lib/minio/minio.module';
+import { minioConfig } from './config/minio.config';
 
 @Module({
   imports: [
@@ -30,7 +33,12 @@ import { UserModule } from './modules/users/user.module';
       }),
       inject: [ConfigService],
     }),
+    MinioModule.forRoot({
+      isGlobal: true,
+      ...minioConfig,
+    }),
     ProductModule,
+    FileUploadModule,
     AuthModule,
     ClerkModule,
     UserModule,
