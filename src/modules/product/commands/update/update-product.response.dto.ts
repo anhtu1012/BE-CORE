@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
 
 export class UpdateProductResponseDto {
   @ApiProperty({ example: '1', description: 'Product ID' })
@@ -32,7 +33,14 @@ export class UpdateProductResponseDto {
     example: 'https://example.com/image.jpg',
     description: 'Product image URL',
   })
+  @Transform(({ value }) => value === 'true' || value === true)
   imageUrl?: string;
+
+  @ApiPropertyOptional({
+    example: 'products/1234abcd.jpg',
+    description: 'Product image object key',
+  })
+  imageKey?: string;
 
   @ApiProperty({ example: '2024-01-01T00:00:00Z', description: 'Created date' })
   createdAt: Date;

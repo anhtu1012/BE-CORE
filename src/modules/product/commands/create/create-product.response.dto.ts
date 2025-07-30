@@ -34,6 +34,12 @@ export class CreateProductResponseDto {
   })
   imageUrl?: string;
 
+  @ApiPropertyOptional({
+    example: 'products/1234abcd.jpg',
+    description: 'Product image object key',
+  })
+  imageKey?: string;
+
   @ApiProperty({ example: '2024-01-01T00:00:00Z', description: 'Created date' })
   createdAt: Date;
 

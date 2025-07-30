@@ -7,12 +7,14 @@ import {
 import { ProductResponseDto } from '../../dto/product.dto';
 import { FindProductQuery } from './find-product.query';
 import { Product } from 'generated/prisma';
+import { FileUploadService } from '@src/modules/file-upload/file-upload.service';
 
 @Injectable()
 export class FindProductQueryHandler {
   constructor(
     @Inject(PRODUCT_REPOSITORY)
     private readonly productRepository: ProductRepositoryPort,
+    private readonly fileUploadService: FileUploadService,
   ) {}
 
   async handle(
@@ -27,13 +29,26 @@ export class FindProductQueryHandler {
         );
       }
 
-      return Ok(this.mapToResponseDto(productOption.unwrap()));
+      return Ok(await this.mapToResponseDto(productOption.unwrap()));
     } catch (error) {
       return Err(error instanceof Error ? error : new Error(String(error)));
     }
   }
 
-  private mapToResponseDto(product: Product): ProductResponseDto {
+  private async mapToResponseDto(
+    product: Product,
+  ): Promise<ProductResponseDto> {
+    // Get URL for imageUrl if it exists
+    let imageUrl: string | undefined = undefined;
+    if (product.imageUrl) {
+      const urlResult = await this.fileUploadService.getFileUrl(
+        product.imageUrl,
+      );
+      if (urlResult.isOk()) {
+        imageUrl = urlResult.unwrap();
+      }
+    }
+
     return {
       id: product.id.toString(),
       name: product.name,
@@ -43,7 +58,8 @@ export class FindProductQueryHandler {
       brand: product.brand,
       stock: product.stock,
       isActive: product.isActive,
-      imageUrl: product.imageUrl ?? undefined,
+      imageUrl,
+      imageKey: product.imageUrl ?? undefined,
       createdAt: product.createdAt,
       updatedAt: product.updatedAt,
     };

@@ -1,14 +1,14 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
 import {
-  IsString,
-  IsNumber,
   IsBoolean,
+  IsNumber,
   IsOptional,
+  IsString,
   IsUrl,
   MaxLength,
   Min,
 } from 'class-validator';
-import { Transform } from 'class-transformer';
 
 export class UpdateProductRequestDto {
   @ApiPropertyOptional({

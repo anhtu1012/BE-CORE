@@ -6,17 +6,13 @@ import {
 import { MinioService } from '@src/lib/minio/minio.service';
 import { Err, Ok, Result } from 'oxide.ts';
 import * as path from 'path';
-import { v4 as uuidv4 } from 'uuid';
-
-import { File as MulterFile } from 'multer';
-
 export interface UploadResult {
   fileName: string;
   originalName: string;
   size: number;
   mimeType: string;
-  url: string;
   objectName: string;
+  url?: string; // Making URL optional as we may not always need it
 }
 
 export interface PresignedUrlResult {
@@ -28,9 +24,14 @@ export interface PresignedUrlResult {
 @Injectable()
 export class FileUploadService {
   constructor(private readonly minioService: MinioService) {}
+  private generateShortId(): string {
+    const timestamp = Date.now().toString().slice(-4);
+    const randomChars = Math.random().toString(36).substring(2, 10);
+    return `${timestamp}${randomChars}`;
+  }
 
   async uploadFile(
-    file: MulterFile,
+    file: Express.Multer.File,
     folder?: string,
   ): Promise<Result<UploadResult, Error>> {
     try {
@@ -38,9 +39,9 @@ export class FileUploadService {
         return Err(new BadRequestException('No file provided'));
       }
 
-      // Generate unique filename
+      // Generate shorter unique filename
       const fileExtension = path.extname(file.originalname);
-      const fileName = `${uuidv4()}${fileExtension}`;
+      const fileName = `${this.generateShortId()}${fileExtension}`;
       const objectName = folder ? `${folder}/${fileName}` : fileName;
 
       // Upload to MinIO
@@ -49,18 +50,12 @@ export class FileUploadService {
         'X-Original-Name': file.originalname,
       });
 
-      // Generate public URL (you might want to use presigned URLs for private files)
-      const url = await this.minioService.getPresignedGetUrl(
-        objectName,
-        24 * 60 * 60,
-      ); // 24 hours
-
+      // Generate result without including URL by default
       const result: UploadResult = {
         fileName,
         originalName: file.originalname,
         size: file.size,
         mimeType: file.mimetype,
-        url,
         objectName,
       };
 
@@ -70,7 +65,7 @@ export class FileUploadService {
     }
   }
   async uploadMultipleFiles(
-    files: MulterFile[],
+    files: Express.Multer.File[],
     folder?: string,
   ): Promise<Result<UploadResult[], Error>> {
     try {
@@ -106,7 +101,7 @@ export class FileUploadService {
     try {
       const info = await this.minioService.getInfoObject(objectName);
       return Ok(info);
-    } catch (error) {
+    } catch {
       return Err(new NotFoundException('File not found'));
     }
   }
@@ -118,7 +113,7 @@ export class FileUploadService {
   ): Promise<Result<PresignedUrlResult, Error>> {
     try {
       const fileExtension = path.extname(fileName);
-      const uniqueFileName = `${uuidv4()}${fileExtension}`;
+      const uniqueFileName = `${this.generateShortId()}${fileExtension}`;
       const objectName = folder
         ? `${folder}/${uniqueFileName}`
         : uniqueFileName;
@@ -150,7 +145,7 @@ export class FileUploadService {
         expiresIn,
       );
       return Ok(url);
-    } catch (error) {
+    } catch {
       return Err(new NotFoundException('File not found'));
     }
   }
@@ -186,6 +181,22 @@ export class FileUploadService {
         targetObjectName,
       });
       return Ok(true);
+    } catch (error) {
+      return Err(error instanceof Error ? error : new Error(String(error)));
+    }
+  }
+
+  // Helper method to get URL for an object name
+  async getFileUrl(
+    objectName: string,
+    expiry: number = 24 * 60 * 60,
+  ): Promise<Result<string, Error>> {
+    try {
+      const url = await this.minioService.getPresignedGetUrl(
+        objectName,
+        expiry,
+      );
+      return Ok(url);
     } catch (error) {
       return Err(error instanceof Error ? error : new Error(String(error)));
     }
